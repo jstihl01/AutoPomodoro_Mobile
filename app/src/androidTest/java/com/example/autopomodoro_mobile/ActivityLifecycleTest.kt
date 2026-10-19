@@ -26,7 +26,7 @@ class ActivityLifecycleTest {
         compose.onNodeWithTag("mode-${mode.name}").performScrollTo().performClick()
         compose.waitUntil(10000) {
             compose.onAllNodesWithTag("mode-${mode.name}").fetchSemanticsNodes()
-                .any { it.config.getOrNull(SemanticsProperties.Selected) == true }
+                .any { it.config.contains(SemanticsProperties.Selected) && it.config[SemanticsProperties.Selected] }
         }
         compose.onNodeWithText("LISTO").performScrollTo().performClick()
         compose.waitForIdle()
@@ -106,6 +106,7 @@ class ActivityLifecycleTest {
             SystemClock.sleep(20000)
             assertFalse("Screen must be allowed to sleep after leaving", shell("dumpsys power").contains("mWakefulness=Awake"))
             shell("input keyevent KEYCODE_WAKEUP")
+            shell("wm dismiss-keyguard")
         } finally {
             shell("settings put system screen_off_timeout $oldTimeout")
             shell("settings put global stay_on_while_plugged_in $oldCharging")
