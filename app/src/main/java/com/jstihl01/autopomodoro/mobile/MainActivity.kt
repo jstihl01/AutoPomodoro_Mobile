@@ -23,11 +23,14 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     private val repository by lazy { SettingsRepository(this) }
     private val engine = ClockEngine()
+    private val transitions = TransitionGate()
+    private val sounds by lazy { TransitionSoundPlayer(lifecycleScope) }
+    private var foreground = false
     private var settings by mutableStateOf<AppSettings?>(null)
     private var snapshot by mutableStateOf<DisplaySnapshot?>(null)
     private var settingsOpen by mutableStateOf(false)
     private val timeChanged = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) { refresh() }
+        override fun onReceive(context: Context?, intent: Intent?) { transitions.reset(); sounds.stop(); refresh() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +38,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         lifecycleScope.launch {
             repository.settings.collect {
+                if (settings?.mode != it.mode) { transitions.reset(); sounds.stop() }
+                if (settings?.volumePercent != it.volumePercent) sounds.stop()
                 settings = it
                 refresh()
             }
@@ -57,7 +62,10 @@ class MainActivity : ComponentActivity() {
                         settings = currentSettings,
                         onMode = { mode -> lifecycleScope.launch { repository.setMode(mode) } },
                         onVolume = { volume -> lifecycleScope.launch { repository.setVolume(volume) } },
-                        onTestSound = {},
+                        onTestSound = {
+                            if (foreground && currentSettings.mode != DisplayMode.CLOCK)
+                                sounds.play(Phase.WORK, currentSettings.volumePercent, test = true)
+                        },
                         onReset = { lifecycleScope.launch { repository.reset() } },
                         onDismiss = { settingsOpen = false; applySystemBars() },
                     )
@@ -67,11 +75,18 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun refresh() {
-        settings?.let { snapshot = engine.current(it.mode).second }
+        if (!foreground) return
+        settings?.let {
+            val (time, display) = engine.current(it.mode)
+            snapshot = display
+            transitions.observe(time, display)?.let { phase -> sounds.play(phase, it.volumePercent) }
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        foreground = true
+        transitions.reset()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         ContextCompat.registerReceiver(this, timeChanged, IntentFilter().apply {
             addAction(Intent.ACTION_TIME_CHANGED)
@@ -82,6 +97,9 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onPause() {
+        foreground = false
+        transitions.reset()
+        sounds.stop()
         unregisterReceiver(timeChanged)
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         super.onPause()
