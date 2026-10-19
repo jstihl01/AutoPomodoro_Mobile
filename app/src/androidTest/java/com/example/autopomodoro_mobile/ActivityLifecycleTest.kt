@@ -13,12 +13,23 @@ import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.util.Calendar
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 
 class ActivityLifecycleTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+
+    @Before fun dismissFirstUseSystemHint() {
+        SystemClock.sleep(1500)
+        val root = InstrumentationRegistry.getInstrumentation().uiAutomation.rootInActiveWindow
+        if (root?.findAccessibilityNodeInfosByViewId("android:id/immersive_cling_title")?.isNotEmpty() == true) {
+            root.findAccessibilityNodeInfosByViewId("android:id/ok").firstOrNull()
+                ?.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK)
+            SystemClock.sleep(500)
+        }
+    }
 
     private fun settings() { compose.onNodeWithContentDescription("Ajustes").performClick() }
     private fun select(mode: DisplayMode) {

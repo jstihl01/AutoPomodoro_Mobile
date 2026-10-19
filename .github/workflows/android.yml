@@ -56,6 +56,8 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           script: |
+            adb shell settings put secure immersive_mode_confirmations confirmed
+            adb shell locksettings set-disabled true
             ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.soakMinutes=${{ github.event_name == 'workflow_dispatch' && inputs.endurance && '60' || '0' }}
             mkdir -p device-screenshots
             adb pull /sdcard/Android/data/com.jstihl01.autopomodoro.mobile.debug/files/screenshots/. device-screenshots/
