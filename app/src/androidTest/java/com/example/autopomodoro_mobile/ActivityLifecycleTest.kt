@@ -1,7 +1,10 @@
 package com.jstihl01.autopomodoro.mobile
 
 import android.content.pm.ActivityInfo
+import android.content.ContentValues
 import android.graphics.Bitmap
+import android.os.Build
+import android.provider.MediaStore
 import android.os.SystemClock
 import android.view.WindowManager
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -44,9 +47,23 @@ class ActivityLifecycleTest {
     }
     private fun capture(name: String) {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
+        if (Build.VERSION.SDK_INT >= 29) {
+            val resolver = context.contentResolver
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, "$name.png")
+                put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/AutoPomodoro")
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+            val uri = requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values))
+            requireNotNull(resolver.openOutputStream(uri)).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            resolver.update(uri, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
+            return
+        }
         val file = File(context.getExternalFilesDir(null), "screenshots/$name.png")
         file.parentFile!!.mkdirs()
-        file.outputStream().use { compose.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it) }
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
     private fun shell(command: String): String =
         InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand(command)

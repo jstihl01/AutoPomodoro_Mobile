@@ -6,8 +6,10 @@ import time
 import xml.etree.ElementTree as ET
 
 nodes = list(ET.parse(sys.argv[1]).getroot().iter("node"))
-if any(node.get("resource-id") == "android:id/immersive_cling_title" for node in nodes):
-    button = next(node for node in nodes if node.get("resource-id") == "android:id/ok")
+if any(node.get("resource-id") == "android:id/immersive_cling_title" or
+       (node.get("package") == "android" and node.get("text", "").lower() == "viewing full screen") for node in nodes):
+    button = next(node for node in nodes if node.get("resource-id") == "android:id/ok" or
+                  (node.get("package") == "android" and node.get("text", "").upper() == "GOT IT"))
     x1, y1, x2, y2 = map(int, re.findall(r"\d+", button.get("bounds")))
     subprocess.run(["adb", "shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2)], check=True)
     time.sleep(1)

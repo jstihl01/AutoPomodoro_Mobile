@@ -60,7 +60,7 @@ jobs:
             adb shell locksettings set-disabled true
             ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.soakMinutes=${{ github.event_name == 'workflow_dispatch' && inputs.endurance && '60' || '0' }}
             mkdir -p device-screenshots
-            adb pull /sdcard/Android/data/com.jstihl01.autopomodoro.mobile.debug/files/screenshots/. device-screenshots/
+            adb pull /sdcard/Pictures/AutoPomodoro/. device-screenshots/
       - uses: actions/upload-artifact@v4
         if: always()
         with:
