@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -19,11 +21,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val signingFile = rootProject.file(".private/signing/keystore.properties")
+    if (signingFile.exists()) {
+        val signingProperties = Properties().apply { signingFile.inputStream().use { load(it) } }
+        signingConfigs {
+            create("production") {
+                storeFile = rootProject.file(signingProperties.getProperty("storeFile"))
+                storePassword = signingProperties.getProperty("storePassword")
+                keyAlias = signingProperties.getProperty("keyAlias")
+                keyPassword = signingProperties.getProperty("keyPassword")
+            }
+        }
+    }
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
         }
         release {
+            if (signingFile.exists()) signingConfig = signingConfigs.getByName("production")
             optimization {
                 enable = false
             }

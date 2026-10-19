@@ -1,0 +1,67 @@
+name: APK installation
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - api: 24
+            target: default
+            profile: pixel
+          - api: 35
+            target: google_apis
+            profile: pixel_6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+      - name: Download signed APK from release draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download v1.0.0 --repo "$GITHUB_REPOSITORY" --pattern 'AutoPomodoro.apk*' --dir production
+      - name: Verify checksum
+        working-directory: production
+        run: sha256sum -c AutoPomodoro.apk.sha256
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: ${{ matrix.target }}
+          arch: x86_64
+          profile: ${{ matrix.profile }}
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: |
+            adb install -r production/AutoPomodoro.apk
+            adb shell am start -W -n com.jstihl01.autopomodoro.mobile/.MainActivity
+            sleep 5
+            adb shell uiautomator dump /sdcard/production.xml
+            adb pull /sdcard/production.xml production/window.xml
+            python3 scripts/check-installed-app.py production/window.xml
+            adb shell screencap -p /sdcard/production.png
+            adb pull /sdcard/production.png production/android-${{ matrix.api }}.png
+            adb shell am force-stop com.jstihl01.autopomodoro.mobile
+            adb install -r production/AutoPomodoro.apk
+            adb shell am start -W -n com.jstihl01.autopomodoro.mobile/.MainActivity
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Production-Android-${{ matrix.api }}
+          path: |
+            production/*.png
+            production/*.xml

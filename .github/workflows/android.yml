@@ -1,5 +1,13 @@
 name: Android
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      endurance:
+        description: 'Ejecutar la prueba de reloj de 60 minutos'
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -48,7 +56,7 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           script: |
-            ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.soakMinutes=60
+            ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.soakMinutes=${{ github.event_name == 'workflow_dispatch' && inputs.endurance && '60' || '0' }}
             mkdir -p device-screenshots
             adb pull /sdcard/Android/data/com.jstihl01.autopomodoro.mobile.debug/files/screenshots/. device-screenshots/
       - uses: actions/upload-artifact@v4
