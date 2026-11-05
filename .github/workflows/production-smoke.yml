@@ -1,6 +1,12 @@
 name: APK installation
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Etiqueta de la release o borrador cuyo APK se comprobará'
+        type: string
+        required: true
+        default: 'v1.1.0'
 permissions:
   contents: write
 jobs:
@@ -29,7 +35,8 @@ jobs:
       - name: Download signed APK from release draft
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download v1.0.0 --repo "$GITHUB_REPOSITORY" --pattern 'AutoPomodoro.apk*' --dir production
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern 'AutoPomodoro.apk*' --dir production
       - name: Verify checksum
         working-directory: production
         run: sha256sum -c AutoPomodoro.apk.sha256

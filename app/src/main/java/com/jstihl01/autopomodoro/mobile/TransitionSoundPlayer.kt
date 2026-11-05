@@ -10,6 +10,8 @@ import kotlin.math.sin
 
 object ToneSamples {
     const val SAMPLE_RATE = 44100
+    // 2.57 times the former 0.35 peak, with headroom and the same click-free envelope.
+    const val PEAK_AMPLITUDE = 0.90
 
     fun create(rest: Boolean, test: Boolean = false): ShortArray {
         val duration = if (rest) 700 else 170
@@ -23,7 +25,7 @@ object ToneSamples {
             val offset = repeat * (toneLength + gapLength)
             for (index in 0 until toneLength) {
                 val envelope = minOf(1.0, index.toDouble() / fadeLength, (toneLength - index - 1).toDouble() / fadeLength)
-                samples[offset + index] = (sin(2 * PI * frequency * index / SAMPLE_RATE) * envelope * 0.35 * Short.MAX_VALUE).toInt().toShort()
+                samples[offset + index] = (sin(2 * PI * frequency * index / SAMPLE_RATE) * envelope * PEAK_AMPLITUDE * Short.MAX_VALUE).toInt().toShort()
             }
         }
         return samples
@@ -44,7 +46,7 @@ class TransitionSoundPlayer(private val scope: CoroutineScope) {
                 val samples = withContext(Dispatchers.Default) { ToneSamples.create(phase == Phase.REST, test) }
                 ensureActive()
                 val track = AudioTrack.Builder()
-                    .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                    .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
                     .setAudioFormat(AudioFormat.Builder().setSampleRate(ToneSamples.SAMPLE_RATE)
                         .setEncoding(AudioFormat.ENCODING_PCM_16BIT).setChannelMask(AudioFormat.CHANNEL_OUT_MONO).build())

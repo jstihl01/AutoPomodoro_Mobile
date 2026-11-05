@@ -7,6 +7,7 @@ import android.os.Build
 import android.provider.MediaStore
 import android.os.SystemClock
 import android.view.WindowManager
+import android.media.AudioManager
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
@@ -80,6 +81,7 @@ class ActivityLifecycleTest {
         compose.activityRule.scenario.recreate()
         compose.onNodeWithTag("phase-text").assertDoesNotExist()
         compose.activityRule.scenario.onActivity {
+            assertEquals(AudioManager.STREAM_MUSIC, it.volumeControlStream)
             assertTrue(it.window.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0)
             it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }

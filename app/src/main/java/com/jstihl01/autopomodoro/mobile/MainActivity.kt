@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.media.AudioManager
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,6 +37,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        volumeControlStream = AudioManager.STREAM_MUSIC
         lifecycleScope.launch {
             repository.settings.collect {
                 if (settings?.mode != it.mode) { transitions.reset(); sounds.stop() }
@@ -112,6 +114,8 @@ class MainActivity : ComponentActivity() {
 
     private fun applySystemBars() {
         WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             if (settingsOpen) show(WindowInsetsCompat.Type.systemBars())
             else hide(WindowInsetsCompat.Type.systemBars())

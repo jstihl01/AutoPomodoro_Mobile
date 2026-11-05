@@ -19,6 +19,13 @@ class SettingsRepositoryTest {
         var repository = repository()
         try {
             assertEquals(AppSettings(), repository.settings.first())
+            assertEquals(100, repository.settings.first().volumePercent)
+            repository.setVolume(60)
+            assertEquals(60, repository.settings.first().volumePercent)
+            scope.coroutineContext.job.cancelAndJoin()
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+            repository = repository()
+            assertEquals("Preserve a previously saved volume", AppSettings(volumePercent = 60), repository.settings.first())
             repository.setMode(DisplayMode.CLOCK)
             repository.setVolume(137)
             assertEquals(AppSettings(DisplayMode.CLOCK, 100), repository.settings.first())
@@ -30,6 +37,7 @@ class SettingsRepositoryTest {
             assertEquals(0, repository.settings.first().volumePercent)
             repository.reset()
             assertEquals(AppSettings(), repository.settings.first())
+            assertEquals(100, repository.settings.first().volumePercent)
         } finally {
             scope.coroutineContext.job.cancelAndJoin()
         }

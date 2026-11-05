@@ -19,10 +19,11 @@ class ClockScreenTest {
             var settings by remember { mutableStateOf(AppSettings()) }
             AutoPomodoroTheme { SettingsDialog(settings, { settings = settings.copy(mode = it) }, {}, {}, {}, {}) }
         }
-        compose.onNodeWithTag("mode-CLOCK").performClick().assertIsSelected()
-        compose.onNodeWithText("Probar sonido").assertIsNotEnabled()
-        compose.onNodeWithText("Restablecer ajustes").performClick()
+        compose.onNodeWithTag("mode-CLOCK").performScrollTo().performClick().assertIsSelected()
+        compose.onNodeWithText("Probar volumen").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithText("RESTABLECER AJUSTES").performScrollTo().performClick()
         compose.onNodeWithText("¿Restablecer ajustes?").assertIsDisplayed()
+        compose.onNodeWithText("Se seleccionará 25/5 y el volumen volverá al 100 %.").assertIsDisplayed()
     }
     @Test fun restLabelIsVisible() {
         compose.setContent { AutoPomodoroTheme { ClockScreen(DisplaySnapshot(DisplayMode.STANDARD, "05:00", Phase.REST, 300), {}) } }

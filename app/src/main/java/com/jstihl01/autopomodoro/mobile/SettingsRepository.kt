@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.map
 
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 
-data class AppSettings(val mode: DisplayMode = DisplayMode.STANDARD, val volumePercent: Int = 60)
+data class AppSettings(val mode: DisplayMode = DisplayMode.STANDARD, val volumePercent: Int = DEFAULT_VOLUME_PERCENT) {
+    companion object { const val DEFAULT_VOLUME_PERCENT = 100 }
+}
 
 class SettingsRepository(private val store: DataStore<Preferences>) {
     constructor(context: Context) : this(context.applicationContext.settingsDataStore)
@@ -23,7 +25,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
         if (error is IOException) emit(emptyPreferences()) else throw error
     }.map { preferences ->
         val mode = DisplayMode.entries.firstOrNull { it.name == preferences[MODE] } ?: DisplayMode.STANDARD
-        AppSettings(mode, (preferences[VOLUME] ?: 60).coerceIn(0, 100))
+        AppSettings(mode, (preferences[VOLUME] ?: AppSettings.DEFAULT_VOLUME_PERCENT).coerceIn(0, 100))
     }
 
     suspend fun setMode(mode: DisplayMode) { store.edit { it[MODE] = mode.name } }

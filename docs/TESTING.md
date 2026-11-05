@@ -54,3 +54,7 @@ Validación del 19 de octubre de 2026:
 [Ejecución de interfaz y compilación](https://github.com/jstihl01/AutoPomodoro_Mobile/actions/runs/39319798331), [ejecuciones de instalación del APK firmado](https://github.com/jstihl01/AutoPomodoro_Mobile/actions/workflows/production-smoke.yml).
 
 La clave de producción tiene la huella SHA-256 de certificado `49bf8bf80793b35c59ce11e158de225de10d3c5664b8b08f873716bfb8cdbc8b`. Es una huella pública, distinta del checksum de cada APK.
+
+## Actualización 1.1.0 de noviembre
+
+La versión 1.1.0 tiene su validación documentada en [VALIDATION-2026-11-05.md](VALIDATION-2026-11-05.md), incluyendo comparación de audio, comprobaciones del icono y flujos de instalación del APK firmado.

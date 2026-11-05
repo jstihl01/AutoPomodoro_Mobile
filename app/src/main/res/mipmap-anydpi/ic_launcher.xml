@@ -1,1 +1,4 @@
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android" android:src="@drawable/autopomodoro_icon" android:gravity="fill" />
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/brand_icon_background" />
+    <item android:drawable="@drawable/brand_icon_clock_legacy" />
+</layer-list>
