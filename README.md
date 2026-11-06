@@ -1,6 +1,6 @@
-[![Descargar APK](https://img.shields.io/badge/Descargar_APK-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/jstihl01/AutoPomodoro_Mobile/releases/latest/download/AutoPomodoro.apk)
-
 # AutoPomodoro para Android
+
+<a href="https://github.com/jstihl01/AutoPomodoro_Mobile/releases/latest/download/AutoPomodoro.apk"><img src="https://img.shields.io/badge/Descargar_APK-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Descargar APK" width="220"></a>
 
 Un Pomodoro sincronizado con la hora real y un reloj digital que mantiene la pantalla encendida mientras lo estás viendo. Sin iniciar, pausar ni reajustar temporizadores. Funciona sin conexión, cuentas, publicidad ni telemetría.
 
